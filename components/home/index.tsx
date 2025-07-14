@@ -3,6 +3,7 @@ import { useState, Fragment } from "react";
 import InputField from "../input";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import Swal from "sweetalert2";
+import { addRecommendation } from "@/dbActions/recommendation";
 
 enum RiskEnum {
   low,
@@ -60,7 +61,7 @@ const HomePageComponent = () => {
       setDependents(value);
     }
   };
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (
       !age ||
       !parseInt(age) ||
@@ -128,14 +129,26 @@ const HomePageComponent = () => {
     }
     const payload = {
       risk,
-      age,
-      dependents,
-      income,
+      age: parseInt(age),
+      dependents: parseInt(dependents),
+      income: parseInt(income),
     };
     try {
+      const response = await addRecommendation(payload);
+
+      console.log(response);
+
+      if (response.error) {
+        Swal.fire({
+          title: "Error!",
+          text: "Something Went Wrong!",
+          icon: "error",
+        });
+        return;
+      }
       Swal.fire({
         title: "Success!",
-        text: "Term Life – $500,000 for 20 years",
+        text: response.success,
         icon: "success",
       });
 

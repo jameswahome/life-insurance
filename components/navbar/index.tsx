@@ -1,6 +1,42 @@
+"use client";
+import { checkAuth, logOut } from "@/dbActions/auth";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 export default function NavBar() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchLoggedInUser = async () => {
+      try {
+        const response = await checkAuth();
+        if (response.success) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (error) {}
+    };
+
+    fetchLoggedInUser();
+  }, []);
+
+  const logoutHandler = async () => {
+    try {
+      const response = await logOut();
+      router.push("/login");
+    } catch (error) {
+      Swal.fire({
+        title: "Oops!",
+        text: "Something Went Wrong!",
+        timer: 2000,
+        icon: "error",
+      });
+    }
+  };
   return (
     <nav
       id="header"
@@ -27,18 +63,30 @@ export default function NavBar() {
           id="nav-content"
         >
           <div className="auth flex items-center w-full md:w-full">
-            <Link
-              href="/login"
-              className="bg-transparent text-gray-800  p-2 rounded border border-gray-300 mr-4 hover:bg-gray-100 hover:text-gray-700"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="bg-blue-600 text-gray-200  p-2 rounded  hover:bg-blue-500 hover:text-gray-100"
-            >
-              Sign up
-            </Link>
+            {isAuthenticated ? (
+              <button
+                onClick={logoutHandler}
+                className="bg-transparent text-gray-800  p-2 rounded border border-gray-300 mr-4 hover:bg-gray-100 hover:text-gray-700"
+              >
+                Log Out
+              </button>
+            ) : (
+              <>
+                {" "}
+                <Link
+                  href="/login"
+                  className="bg-transparent text-gray-800  p-2 rounded border border-gray-300 mr-4 hover:bg-gray-100 hover:text-gray-700"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="bg-blue-600 text-gray-200  p-2 rounded  hover:bg-blue-500 hover:text-gray-100"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

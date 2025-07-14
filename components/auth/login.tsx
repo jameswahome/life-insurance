@@ -5,11 +5,15 @@ import InputComponent from "../input/loginInput";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import Swal from "sweetalert2";
 import { validateEmail } from "@/helpers/validation";
+import { loginUser } from "@/dbActions/auth";
+import { useRouter } from "next/navigation";
 
 const LoginComponent = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const handleLogin = () => {
+  const router = useRouter();
+
+  const handleLogin = async () => {
     if (!email || email.trim() === "" || !validateEmail(email)) {
       toast.error("Enter a valid Email", {
         position: "top-right",
@@ -38,16 +42,19 @@ const LoginComponent = () => {
       });
       return;
     }
-    const payload = {
-      password,
-      email: email.toLowerCase(),
-    };
+
     try {
-      Swal.fire({
-        title: "Success!",
-        text: "Login Successful",
-        icon: "success",
-      });
+      const response = await loginUser(email, password);
+      if (response.success) {
+        router.push("/");
+      } else {
+        Swal.fire({
+          title: "Invalid Credentials",
+          text: "Invalid credentials",
+          timer: 2000,
+          icon: "error",
+        });
+      }
     } catch (err) {
       Swal.fire({
         title: "Invalid Credentials",

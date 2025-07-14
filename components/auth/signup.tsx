@@ -5,12 +5,13 @@ import InputComponent from "../input/loginInput";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import Swal from "sweetalert2";
 import { validateEmail } from "@/helpers/validation";
+import { createUser } from "@/dbActions/auth";
 
 const SignUpComponent = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const handleSignup = () => {
+  const handleSignup = async () => {
     if (!email || email.trim() === "" || !validateEmail(email)) {
       toast.error("Enter a valid Email", {
         position: "top-right",
@@ -69,15 +70,30 @@ const SignUpComponent = () => {
     }
 
     const payload = {
-      password,
       email: email.toLowerCase(),
+      password,
+      confirmPassword: confirmPassword,
     };
     try {
-      Swal.fire({
-        title: "Success!",
-        text: "Account created Successfully",
-        icon: "success",
-      });
+      const response = await createUser(payload);
+
+      if (response.success) {
+        Swal.fire({
+          title: "Success!",
+          text: "Account created Successfully",
+          icon: "success",
+        });
+
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+      } else {
+        Swal.fire({
+          title: "Success!",
+          text: response.error,
+          icon: "success",
+        });
+      }
     } catch (err) {
       Swal.fire({
         title: "Error!",
